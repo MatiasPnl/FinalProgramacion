@@ -1,0 +1,99 @@
+Final Programación 2do
+Este proyecto es una solución al final de Programación 2do, que incluye una API desarrollada con FastAPI, conectada a una base de datos SQLite, y un frontend creado con Flask. La solución permite realizar un CRUD de usuarios, la asignación de tareas a usuarios, y la visualización de tareas filtradas por usuario y estado.
+
+__Tecnologías utilizadas__
+
+FastAPI: Backend para la creación de la API RESTful.
+SQLite: Base de datos ligera para almacenamiento.
+Flask: Framework para el frontend y la generación de templates HTML.
+HTML/CSS: Interfaz del usuario.
+Python: Lenguaje principal para el desarrollo del proyecto.
+
+___Requisitos previos__
+Python 3.x instalado.
+Tener pip configurado para instalar dependencias.
+Clonar este repositorio en tu máquina local:
+
+git clone https://github.com/MatiasPnl/FinalProgramacion.git
+
+__Configuración del proyecto__
+1. Crear un entorno virtual
+
+python -m venv venv
+2. Activar el entorno virtual
+En Windows:
+
+.\venv\Scripts\activate
+En macOS/Linux:
+source venv/bin/activate
+
+3. Instalar dependencias
+
+
+pip install -r requirements.txt
+4. Configurar la base de datos
+La base de datos dbfinal.db ya está incluida en el repositorio con las estructuras necesarias. Asegúrate de que esté en el directorio raíz del proyecto.
+
+Si necesitas inicializar la base de datos, puedes usar el siguiente comando:
+python -c "from backend.database import Base, engine; Base.metadata.create_all(bind=engine)"
+
+Ejecución del proyecto
+1. Iniciar el backend (FastAPI)
+Abre una terminal y navega al directorio raíz.
+Ejecuta el servidor FastAPI:
+uvicorn backend.main:app --reload
+Accede a la API en http://127.0.0.1:8000.
+Documentación interactiva de la API en http://127.0.0.1:8000/docs.
+2. Iniciar el frontend (Flask)
+Abre otra terminal en el directorio raíz.
+Ejecuta la aplicación Flask:
+
+python frontend/app.py
+Accede al frontend en http://127.0.0.1:5000.
+Características principales
+1. CRUD de Usuarios
+Crear: Agregar un nuevo usuario con ID, nombre, edad y correo electrónico.
+Leer: Ver la lista de usuarios.
+Actualizar: Editar los datos de un usuario existente.
+Eliminar: Borrar un usuario de la base de datos.
+2. Asignación de Tareas
+Asignar tareas a usuarios existentes.
+Las tareas incluyen una descripción, estado, y relación con el usuario correspondiente.
+3. Filtrar y visualizar tareas
+Ver todas las tareas activas (estado: pendiente).
+Filtrar tareas por usuario y estado desde el frontend.
+
+______Estructura del proyecto________
+FinalProgramacion/
+│
+├── backend/                     # Backend (FastAPI)
+│   ├── main.py                  # Archivo principal de la API
+│   ├── models.py                # Modelos de SQLAlchemy
+│   ├── schemas.py               # Esquemas de Pydantic para validación
+│   ├── database.py              # Configuración de la base de datos
+│
+├── frontend/                    # Frontend (Flask)
+│   ├── app.py                   # Archivo principal de Flask
+│   ├── templates/               # Templates HTML
+│   │   └── index.html           # Página principal
+│   ├── static/                  # Archivos estáticos
+│       └── css/                 # Estilos CSS
+│           └── style.css        # Archivo de estilos
+│
+├── dbfinal.db                   # Base de datos SQLite
+├── requirements.txt             # Dependencias del proyecto
+└── README.md                    # Documentación del proyecto
+API Endpoints
+Usuarios
+GET /usuarios/: Obtener todos los usuarios.
+POST /usuarios/: Crear un usuario.
+PUT /usuarios/{usuario_id}: Actualizar un usuario.
+DELETE /usuarios/{usuario_id}: Eliminar un usuario.
+Tareas
+GET /tareas/: Obtener todas las tareas activas.
+GET /tareas/{usuario_id}: Obtener tareas activas de un usuario específico.
+POST /tareas/: Crear una nueva tarea.
+
+Notas adicionales
+Si necesitas reiniciar el entorno o la base de datos, asegúrate de hacer una copia de respaldo si es necesario.
+El proyecto incluye datos de prueba básicos. Puedes extender las funcionalidades según sea necesario.
