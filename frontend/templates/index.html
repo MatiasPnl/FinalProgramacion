@@ -47,22 +47,50 @@
     <!-- Filtrar tareas por usuario -->
     <form action="/tareas_usuario" method="GET">
         <select name="usuario_id" required>
+            <option value="" disabled selected>Seleccione un usuario</option>
             {% for usuario in usuarios %}
-                <option value="{{ usuario.id }}">{{ usuario.nombre }}</option>
+                <option value="{{ usuario.id }}" {% if usuario_seleccionado and usuario.id == usuario_seleccionado.id %}selected{% endif %}>
+                    {{ usuario.nombre }}
+                </option>
             {% endfor %}
         </select>
         <button type="submit">Filtrar</button>
     </form>
-    <ul>
-        {% for tarea in tareas %}
-            <li>{{ tarea.tarea }}</li>
-        {% endfor %}
-    </ul>
+
+    <!-- Mostrar el nombre del usuario seleccionado -->
+    {% if usuario_seleccionado %}
+        <h3>Tareas asignadas a: {{ usuario_seleccionado.nombre }}</h3>
+        <!-- Mostrar la lista de tareas pendientes -->
+        <ul id="tareas-pendientes">
+            {% for tarea in tareas %}
+                <li id="tarea-{{ tarea.id }}">
+                    <input type="checkbox" data-tarea-id="{{ tarea.id }}" onchange="completarTarea(this)">
+                    {{ tarea.tarea }}
+                </li>
+            {% else %}
+                <li>No hay tareas disponibles para este usuario.</li>
+            {% endfor %}
+        </ul>
+        <!-- Botón para abrir el modal -->
+        <button onclick="cargarTareasCompletadas('{{ usuario_seleccionado.id }}')">🔍 Ver Tareas Completadas</button>
+    {% else %}
+        <p>Seleccione un usuario para ver sus tareas.</p>
+    {% endif %}
+
+    <!-- Modal para mostrar tareas completadas -->
+    <div id="modal" style="display: none;">
+        <div style="background: #f9f9f9; padding: 20px; border: 1px solid #ccc; width: 400px;">
+            <h3>Tareas Completadas</h3>
+            <ul id="lista-tareas-completadas"></ul>
+            <button onclick="document.getElementById('modal').style.display='none'">Cerrar</button>
+        </div>
+    </div>
 
     <!-- Formulario para asignar tareas -->
     <h3>Asignar Tarea</h3>
     <form action="/asignar_tarea" method="POST">
         <select name="usuario_id" required>
+            <option value="" disabled selected>Seleccione un usuario</option>
             {% for usuario in usuarios %}
                 <option value="{{ usuario.id }}">{{ usuario.nombre }}</option>
             {% endfor %}
@@ -70,5 +98,72 @@
         <input type="text" name="tarea" placeholder="Descripción de la tarea" required>
         <button type="submit">Asignar Tarea</button>
     </form>
+
+    <!-- Scripts JavaScript -->
+    <script>
+        // Función para completar una tarea
+        function completarTarea(checkbox) {
+            const tareaId = checkbox.dataset.tareaId;
+            fetch(`/completar_tarea`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `tarea_id=${tareaId}`
+            }).then(response => {
+                if (response.ok) {
+                    checkbox.parentElement.style.display = "none";
+                } else {
+                    alert("Error al completar la tarea.");
+                    checkbox.checked = false;
+                }
+            }).catch(() => alert("Error al conectar con el servidor."));
+        }
+
+        // Función para cargar tareas completadas en el modal
+        function cargarTareasCompletadas(usuarioId) {
+            fetch(`/tareas_completadas/${usuarioId}`)
+                .then(response => response.json())
+                .then(tareas => {
+                    const lista = document.getElementById("lista-tareas-completadas");
+                    lista.innerHTML = "";
+
+                    if (tareas.length === 0) {
+                        lista.innerHTML = "<li>No hay tareas completadas para este usuario.</li>";
+                        return;
+                    }
+
+                    tareas.forEach(tarea => {
+                        const item = document.createElement("li");
+                        item.innerHTML = `
+                            ${tarea.tarea} - Completada el ${tarea.fecha}
+                            <button onclick="eliminarTareaCompletada('${tarea.id}', '${usuarioId}')">❌</button>
+                        `;
+                        lista.appendChild(item);
+                    });
+
+                    document.getElementById("modal").style.display = "block";
+                })
+                .catch(error => {
+                    console.error("Error al cargar tareas completadas:", error);
+                    alert("Error al cargar las tareas completadas.");
+                });
+        }
+
+        // Función para eliminar una tarea completada
+        function eliminarTareaCompletada(tareaId, usuarioId) {
+            fetch(`/eliminar_tarea/${tareaId}`, { method: "DELETE" })
+                .then(response => {
+                    if (response.ok) {
+                        alert("Tarea eliminada correctamente.");
+                        cargarTareasCompletadas(usuarioId);
+                    } else {
+                        alert("Error al eliminar la tarea.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error al eliminar la tarea:", error);
+                    alert("Error al conectar con el servidor.");
+                });
+        }
+    </script>
 </body>
 </html>
